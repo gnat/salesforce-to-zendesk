@@ -1,11 +1,10 @@
-<?php
+<?php namespace LambdaSolutions;
 
-require './Salesforce.php'; // Temporary.
+require './Salesforce.php';
 
 /**
-* Salesforce to Zendesk task.
-* 
-* This script should be set up as a cron job and scheduled to run every few minutes.
+* Export Salesforce CRM data to Zendesk customer ticketing system.
+* This script may be set up as a cron job, scheduled to run every few minutes.
 */
 class SalesforceToZendesk
 {
@@ -62,7 +61,7 @@ class SalesforceToZendesk
 		$this->import_products = array();
 
 		// Generate Salesforce-compatible time stamps.
-		$date_start = urlencode(date(DATE_ISO8601, strtotime('-1 week')));
+		$date_start = urlencode(date(DATE_ISO8601, strtotime('-1 hour')));
 		$date_end = urlencode(date(DATE_ISO8601, strtotime('now')));
 
 		// Retrieve recent Account updates.

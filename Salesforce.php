@@ -1,7 +1,7 @@
-<?php
+<?php namespace LambdaSolutions;
 
 /**
-* Salesforce helper class for easy usage of the Salesforce API. 
+* Salesforce API wrapper class. 
 * Easily interact with the Salesforce website.
 * Expand on this class with new features as desired.
 *
@@ -18,15 +18,15 @@ class Salesforce
 	public $instance_url = '';
 	public $authenticated = false;
 
-	// Credentials
+	// Credentials.
 	public $username, $password, $client_id, $client_secret;
 
 	/**
-	* Constructor.
-	* @param string $username
-	* @param string $password
-	* @param string $client_id
-	* @param string $client_secret
+	* Constructor. You may pass in credentials here.
+	* @param string $username User.
+	* @param string $password User password.
+	* @param string $client_id App ID.
+	* @param string $client_secret App Secret.
 	*/
 	public function __construct($username, $password, $client_id, $client_secret)
 	{
@@ -81,8 +81,8 @@ class Salesforce
 
 	/**
 	* Query Salesforce API.
-	* @param string $url URL endpoint in API to query.
-	* @param array $post POST data to sent in API query.
+	* @param string $url URL endpoint for API to query.
+	* @param array $post POST data to send with API query.
 	* @return array Returned data on success. Null on failure.
 	*/
 	public function Query($url, $post = '')
@@ -123,8 +123,8 @@ class Salesforce
 	/**
 	* Query Salesforce API.
 	* Default SObject URL prepended on queries.
-	* @param string $url URL endpoint in API to query.
-	* @param array $post POST data to sent in API query.
+	* @param string $url URL endpoint for API to query.
+	* @param array $post POST data to send with API query.
 	* @return array Returned data on success. Null on failure.
 	*/
 	public function QueryObject($url, $post = '')
