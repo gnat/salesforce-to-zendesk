@@ -1,5 +1,7 @@
 ### Salesforce to Zendesk integration.
 
+Exports Salesforce CRM data to Zendesk customer ticketing system.
+
 Written by Nathaniel Sabanski.
 
 ### Crontab sample.
