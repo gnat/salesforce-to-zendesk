@@ -144,9 +144,10 @@ class SalesforceToZendesk
 					$email = $contact["Email"];
 
 				// Build import data.
-				$this->import_contacts[$id] = array(
+				$this->import_contacts[] = array(
 					"name" => $name,
-					"email" => $email
+					"email" => $email,
+					"external_id" => $id
 					);
 			}
 
@@ -167,20 +168,18 @@ class SalesforceToZendesk
 				if(isset($products["records"]))
 					$products = $products["records"];
 
+				// Defaults.
+				$package_type = '';
+
 				// Scan Products (Line Items) on this Opportunity.
 				foreach($products as $product)
 				{	
-					// Defaults.
-					$package_type = 'None';
-
-					if(isset($product["Name"]))
-						$package_type = $product["Name"];
-
 					// Build import data.
-					$this->import_products[$id] = array(
-						"package_type" => $package_type
-						);
+					if(isset($product["Name"]))
+						$package_type .= $product["Name"].PHP_EOL;
 				}
+
+				$this->import_products[$id] = $package_type;
 			}
 		}
 
@@ -224,9 +223,17 @@ class SalesforceToZendesk
 		}
 
 		// Create or Update users with data from Salesforce.
-		foreach($this->import_contacts as $id => $contact)
+		foreach($this->import_contacts as $contact)
 		{
+			// Link this user to their organization in Zendesk.
+			// Get associated Zendesk organization ID using external Salesforce ID.
+			$output = $this->zendesk->Query("organizations/search.json?external_id=".$contact['external_id']);
+
+			if(isset($output['organizations'][0]['id']))
+				$contact['organization_id'] = $output['organizations'][0]['id'];
 			$contact = array('user' => $contact);
+
+			// Create/update this User in Zendesk.
 			$output = $this->zendesk->Query("users/create_or_update.json", "POST", $contact);
 		}
 
