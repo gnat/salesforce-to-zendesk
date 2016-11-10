@@ -1,7 +1,5 @@
 <?php namespace LambdaSolutions;
 
-require './Salesforce.php';
-
 /**
 * Export Salesforce CRM data to Zendesk customer ticketing system.
 * This script may be set up as a cron job, scheduled to run every few minutes.
@@ -17,6 +15,9 @@ class SalesforceToZendesk
 	public $salesforce_password = '';
 	public $salesforce_client_id = '';
 	public $salesforce_client_secret = '';
+	public $zendesk_username = '';
+	public $zendesk_subdomain = '';
+	public $zendesk_token = '';
 
 	// Imported data to transfer.
 	public $import_accounts = array();
@@ -29,6 +30,7 @@ class SalesforceToZendesk
 	*/
 	public function Run()
 	{
+		// Salesforce setup.
 		$this->salesforce = new Salesforce(
 			$this->salesforce_username,
 			$this->salesforce_password,
@@ -36,17 +38,24 @@ class SalesforceToZendesk
 			$this->salesforce_client_secret
 		);
 
+		// Zendesk setup.
+		$this->zendesk = new Zendesk(
+			$this->zendesk_username,
+			$this->zendesk_subdomain,
+			$this->zendesk_token
+		);
+
 		// Run all sub-tasks.
 		if(!$this->salesforce->Authenticate())
 			return false;
 		if(!$this->SalesforcePull())
 			return false;
-		/*if(!$this->zendesk->Authenticate())
+		if(!$this->zendesk->Authenticate())
 			return false;
 		if(!$this->ZendeskPush())
-			return false;*/
+			return false;
 
-		return true;
+		return true; // Success.
 	}
 
 	/**
@@ -61,7 +70,7 @@ class SalesforceToZendesk
 		$this->import_products = array();
 
 		// Generate Salesforce-compatible time stamps.
-		$date_start = urlencode(date(DATE_ISO8601, strtotime('-1 hour')));
+		$date_start = urlencode(date(DATE_ISO8601, strtotime('-1 week')));
 		$date_end = urlencode(date(DATE_ISO8601, strtotime('now')));
 
 		// Retrieve recent Account updates.
@@ -76,6 +85,7 @@ class SalesforceToZendesk
 		{
 			// Defaults.
 			$owner = 'None';
+			$name = 'None';
 			$website = 'None';
 			$phone_number = 'None';
 			$address = 'None';
@@ -89,6 +99,8 @@ class SalesforceToZendesk
 			// Get Account details.
 			$temp = $this->salesforce->QueryObject("Account/".$id);
 
+			if(isset($temp["Name"]))
+				$name = $temp["Name"];
 			if(isset($temp["Website"]))
 				$website = $temp["Website"];
 			if(isset($temp["Phone"]))
@@ -107,6 +119,7 @@ class SalesforceToZendesk
 			// Build import data.
 			$this->import_accounts[$id] = array(
 				"account_owner" => $owner,
+				"name" => $name,
 				"website" => $website,
 				"address" => $address,
 				"phone_number" => $phone_number
@@ -170,22 +183,8 @@ class SalesforceToZendesk
 				}
 			}
 		}
-		
-		// Debug.
-		//var_dump($this->import_accounts);
-		//var_dump($this->import_contacts);
-		//var_dump($this->import_products);
 
-		return false;
-	}
-
-	/**
-	* Authenticate with Zendesk API.
-	* @return bool True on success. False on failure.
-	*/
-	private function ZendeskAuth()
-	{
-		return false;
+		return true;
 	}
 
 	/**
@@ -194,9 +193,50 @@ class SalesforceToZendesk
 	*/
 	private function ZendeskPush()
 	{
-		return false;
+		// Create or Update organizations with data from Salesforce.
+		foreach($this->import_accounts as $id => $accounts)
+		{
+			$organization = array();
+			$organization_fields = array();
+
+			// Use the Salesforce unique ID as the external ID.
+			$organization["external_id"] = $id; 
+			if(isset($this->import_accounts[$id]))
+				$organization["name"] = $this->import_accounts[$id]["name"];
+
+			// Only export data that we have available to update.
+			if(isset($this->import_accounts[$id]))
+				$organization_fields["account_owner"] = $this->import_accounts[$id]["account_owner"];
+			if(isset($this->import_accounts[$id]))
+				$organization_fields["website"] = $this->import_accounts[$id]["website"];
+			if(isset($this->import_accounts[$id]))
+				$organization_fields["address"] = $this->import_accounts[$id]["address"];
+			if(isset($this->import_accounts[$id]))
+				$organization_fields["phone_number"] = $this->import_accounts[$id]["phone_number"];
+			if(isset($this->import_products[$id]))
+				$organization_fields["package_type"] = $this->import_products[$id];
+
+			// Add custom organization fields as a sub-array.
+			$organization["organization_fields"] = $organization_fields;
+			$organization = array('organization' => $organization);
+
+			$this->zendesk->Query("organizations/create_or_update.json", "POST", $organization);
+		}
+
+		// Create or Update users with data from Salesforce.
+		foreach($this->import_contacts as $id => $contact)
+		{
+			$contact = array('user' => $contact);
+			$output = $this->zendesk->Query("users/create_or_update.json", "POST", $contact);
+		}
+
+		return true;
 	}
 }
+
+// Include dependencies.
+include './Salesforce.php';
+include './Zendesk.php';
 
 // Run this task.
 $task = new SalesforceToZendesk();
