@@ -2,7 +2,6 @@
 
 /**
 * Export Salesforce CRM data to Zendesk customer ticketing system.
-* This script may be set up as a cron job, scheduled to run every few minutes.
 */
 class SalesforceToZendesk
 {
@@ -240,15 +239,3 @@ class SalesforceToZendesk
 		return true;
 	}
 }
-
-// Include dependencies.
-include './Salesforce.php';
-include './Zendesk.php';
-
-// Run this task.
-$task = new SalesforceToZendesk();
-
-if($task->Run())
-	echo "Success.";
-else
-	echo "Failure.";
