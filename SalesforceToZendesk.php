@@ -25,10 +25,26 @@ class SalesforceToZendesk
 
 	/**
 	* Run this task.
+	* @param string $salesforce_username Salesforce credentials.
+	* @param string $salesforce_password Salesforce credentials.
+	* @param string $salesforce_client_id Salesforce credentials.
+	* @param string $salesforce_client_secret Salesforce credentials.
+	* @param string $zendesk_username Zendesk credentials.
+	* @param string $zendesk_subdomain Zendesk credentials.
+	* @param string $zendesk_token Zendesk credentials.
 	* @return bool|String True on success. False on failure.
 	*/
-	public function Run()
+	public function Run($salesforce_username = '', $salesforce_password = '', $salesforce_client_id = '', $salesforce_client_secret = '', $zendesk_username = '', $zendesk_subdomain = '', $zendesk_token = '')
 	{
+		// Check environment variables first, then fall back to passed-in credentials.
+		$this->salesforce_username = getenv("SALESFORCE_USERNAME") ?: $salesforce_username;
+		$this->salesforce_password = getenv("SALESFORCE_PASSWORD") ?: $salesforce_password;
+		$this->salesforce_client_id = getenv("SALESFORCE_CLIENT_ID") ?: $salesforce_client_id;
+		$this->salesforce_client_secret = getenv("SALESFORCE_CLIENT_SECRET") ?: $salesforce_client_secret;
+		$this->zendesk_username = getenv("ZENDESK_USERNAME") ?: $zendesk_username;
+		$this->zendesk_subdomain = getenv("ZENDESK_SUBDOMAIN") ?: $zendesk_subdomain;
+		$this->zendesk_token = getenv("ZENDESK_TOKEN") ?: $zendesk_token;
+		
 		// Salesforce setup.
 		$this->salesforce = new Salesforce(
 			$this->salesforce_username,
