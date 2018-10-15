@@ -7,5 +7,5 @@ Written by Nathaniel Sabanski.
 ### Crontab sample.
 
 ```
-*/10 * * * * cd /path/to/script; /usr/bin/php SalesforceToZendesk.php
+*/10 * * * * cd /path/to/salesforce-to-zendesk; /usr/bin/php Run.php
 ```
