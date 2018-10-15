@@ -9,3 +9,15 @@ Written by Nathaniel Sabanski.
 ```
 */10 * * * * cd /path/to/salesforce-to-zendesk; /usr/bin/php Run.php
 ```
+
+### Environment Variables (Optional)
+
+Environment variables can be used to pass in secrets for Docker support, and other container systems.
+
+* SALESFORCE_USERNAME
+* SALESFORCE_PASSWORD
+* SALESFORCE_CLIENT_ID
+* SALESFORCE_CLIENT_SECRET
+* ZENDESK_USERNAME
+* ZENDESK_SUBDOMAIN
+* ZENDESK_TOKEN
