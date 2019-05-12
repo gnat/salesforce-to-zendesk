@@ -1,18 +1,18 @@
-### Salesforce to Zendesk integration.
+# Salesforce to Zendesk customer integration service.
 
-Exports Salesforce CRM data to Zendesk customer ticketing system.
+Updates Zendesk customer ticketing system with customer data from Salesforce CRM.
 
 Written by Nathaniel Sabanski.
 
-### Crontab sample.
+## Crontab sample.
 
 ```
 */10 * * * * cd /path/to/salesforce-to-zendesk; /usr/bin/php Run.php
 ```
 
-### Environment Variables (Optional)
+## Environment Variables (Optional)
 
-Environment variables can be used to pass in secrets for Docker support, and other container systems.
+Used to pass in secrets for usage with Docker and other container systems to run as microservice.
 
 * SALESFORCE_USERNAME
 * SALESFORCE_PASSWORD
